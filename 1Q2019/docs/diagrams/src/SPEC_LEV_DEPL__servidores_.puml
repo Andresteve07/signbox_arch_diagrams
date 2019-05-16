@@ -1,0 +1,121 @@
+@startuml
+/'
+top to bottom direction
+skinparam nodesep 4
+skinparam ranksep 2
+skinparam ParticipantPadding 2
+skinparam BoxPadding 2
+'/
+skinparam nodesep 4
+skinparam ranksep 2
+skinparam linetype polyline
+skinparam arrowFontStyle bold
+skinparam arrowFontSize 18
+
+!definelong FRONTEND_DEPLOY(name)
+frame "name## Frontend" {
+    node "Dell PowerEdge T30" <<device>> as name##_front_serv{
+        node "SUSE Linux Ent 10" <<OS>> as name##_front_os{
+            node "Apache" <<web server>> as name##_front_ws{
+            artifact name##_front_specs <<deployment spec>> as "package.json
+            ----
+            config1: String
+            config2: Int
+            config3: Float"
+            package name <<dist folder>> as name##_front_dist{
+                artifact index.html <<source>> as name##_front_index
+                artifact "main-[V].[H].js" <<source>> as name##_front_main
+                artifact "polyfill-[V].[H].bundle.js" <<source>> as name##_front_poly
+                artifact "runtime-[V].[H].bundle.js" <<source>> as name##_front_run
+                artifact "style.[H].bundle.css" <<source>> as name##_front_style
+                folder assets as name##_front_assets
+            }
+        }
+        }
+    }
+}
+
+name##_front_specs ..> name##_front_dist
+!enddefinelong 
+
+!definelong DATABASE_DEPLOY(dbn)
+frame "dbn## Database"{
+    node "Dell PowerEdge T30" <<device>> as dbn##_db_serv{
+        node "SUSE Linux Ent 10" <<OS>> as dbn##_db_os{
+            node "Postgres Server" <<database system>> as dbn##_db_sys {
+                artifact signbox_db.sql <<document>> as dbn##_db_file
+            }
+        }
+    }
+}
+
+!enddefinelong
+
+!definelong SPECS(name)
+artifact name##_api_specs <<deployment spec>> as "API configs
+----
+config1: String
+config2: Int
+config3: Float"
+!enddefinelong
+frame DEP as "SignBox Deployment Diagram" {
+    node "Dell PowerEdge T30" <<device>> as servhw{
+    node "SUSE Linux Ent 10" <<OS>> {
+        node "Tomcat 15.2" <<web server>> as tomcat_ws{
+            package box {
+                artifact signbox_api.war <<web application>> as box_api_art
+                SPECS(box)
+            }
+            package fleni {
+                artifact signbox_api.war <<web application>> as fleni_api_art
+                SPECS(fleni)
+            }
+            package osplad {
+                artifact signbox_api.war <<web application>> as osplad_api_art
+                SPECS(osplad)
+            }
+        }
+    }
+}
+
+box_api_specs ..> box_api_art
+fleni_api_specs ..> fleni_api_art
+osplad_api_specs ..> osplad_api_art
+
+FRONTEND_DEPLOY(box)
+FRONTEND_DEPLOY(fleni)
+FRONTEND_DEPLOY(osplad)
+
+DATABASE_DEPLOY(box)
+DATABASE_DEPLOY(fleni)
+DATABASE_DEPLOY(osplad)
+}
+
+!define LTH [thickness=5]
+
+box_front_ws -LTH- tomcat_ws: HTTP:8080
+fleni_front_ws -LTH- tomcat_ws: HTTP:8081
+osplad_front_ws -LTH- tomcat_ws: HTTP:8082
+
+tomcat_ws -LTH- box_db_sys:jdbc:postgresql:5432
+tomcat_ws -LTH- fleni_db_sys:jdbc:postgresql:5432
+tomcat_ws -LTH- osplad_db_sys:jdbc:postgresql:5432
+'/
+skinparam node {
+  backgroundColor<<device>> LightBlue
+  backgroundColor<<web server>> PaleGreen
+  backgroundColor<<OS>> Wheat
+  backgroundColor<<database system>> Pink
+ 
+}
+skinparam package {
+    backgroundColor<<dist folder>> Yellow
+}
+skinparam artifact {
+    
+    BackgroundColor<<deployment spec>> LightSteelBlue
+    BorderColor<<deployment spec>> RoyalBlue
+    FontColor<<deployment spec>> DarkSlateBlue
+    BackgroundColor<<source>> White
+}
+@enduml

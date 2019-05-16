@@ -1,0 +1,29 @@
+@startuml
+'skinparam packageBorderColor blue
+'skinparam packageFontStyle bold
+title SignBox - Repositories
+
+package "**SignBox_Web**" <<repository>> as front_sb
+package "**SignBox_Rest**" <<repository>> as api_sb
+package "**SignBox-FT_Web**" <<repository>> as front_ft
+package "**SignBox-FT_Rest**" <<repository>> as api_ft
+package "**SignBox-CPIC_Web**" <<repository>> as front_cpic
+package "**SignBox-CPIC_Rest**" <<repository>> as api_cpic
+
+front_sb ..> api_sb: <<use>>
+front_cpic ..> api_cpic: <<use>>
+front_ft ..> api_ft: <<use>>
+front_cpic --|> front_ft : <<extends>>
+api_cpic --|> api_ft: <<extends>>
+front_ft --|> front_sb: <<extends>>
+api_ft --|> api_sb: <<extends>>
+
+
+skinparam package{
+    fontStyle<<repository>> bold
+    stereotypeStyle<<repository>> bold
+    borderColor<<repository>> red
+}
+
+
+@enduml
